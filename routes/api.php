@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\RProductController;
+use App\Http\Controllers\RSubCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,4 +31,8 @@ Route::post('update-category', [CategoryController::class, 'updateCategory']);
 Route::get('delete-category', [CategoryController::class, 'deleteCategory']);
 Route::get('show-category', [CategoryController::class, 'showCategory']);
 
+// -----------------Sub Category --------------------
+Route::resource('sub_categories',RSubCategoryController::class)->except('create','edit');
+//-----------------Product-----------------------
 
+Route::resource('product',RProductController::class)->except('create','edit');

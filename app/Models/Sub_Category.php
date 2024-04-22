@@ -12,11 +12,11 @@ class Sub_Category extends Model
 {
     use HasFactory;
 
+    protected $table = 'sub_categories';
     public function category():BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
-
     public function product():HasMany
     {
         return $this->hasMany(Product::class);
