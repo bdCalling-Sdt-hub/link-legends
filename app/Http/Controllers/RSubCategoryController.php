@@ -24,9 +24,9 @@ class RSubCategoryController extends Controller
         }else{
             return response()->json([
                 'message' => 'Sub Category',
-                'status' => 200,
+                'status' => 404,
                 'data' => []
-            ],200);
+            ],404);
         }
     }
 

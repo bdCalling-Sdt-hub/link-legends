@@ -14,9 +14,11 @@ return new class extends Migration
             $table->foreignId('subcategory_id');
             $table->string('product_name');
             $table->string('url')->nullable();
-            $table->json('color');
-            $table->json('size');
+            $table->string('color');
+            $table->string('style')->nullable();
+            $table->string('size');
             $table->string('regular_price')->nullable();
+            $table->string('interior_condition')->nullable();
             $table->string('sale_price');
             $table->string('brand_name');
             $table->string('product_rating_avg')->nullable();

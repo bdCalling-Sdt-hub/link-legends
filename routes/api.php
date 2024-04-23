@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RProductController;
 use App\Http\Controllers\RSubCategoryController;
 use Illuminate\Http\Request;
@@ -36,3 +37,8 @@ Route::resource('sub_categories',RSubCategoryController::class)->except('create'
 //-----------------Product-----------------------
 
 Route::resource('product',RProductController::class)->except('create','edit');
+
+
+
+
+Route::post('add-product',[ProductController::class,'addProduct']);

@@ -31,6 +31,7 @@ class RProductController extends Controller
 
     public function store(Request $request)
     {
+        return $request;
         // Validate the incoming request data
         $validator = Validator::make($request->all(),[
             'category_id' => 'required',
