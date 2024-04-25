@@ -1,28 +1,48 @@
 <?php
 
+use App\Http\Controllers\AuthAdminController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RContactController;
 use App\Http\Controllers\RProductController;
+use App\Http\Controllers\RRatingController;
 use App\Http\Controllers\RSubCategoryController;
+use App\Http\Controllers\WebsiteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::group([
+    ['middleware' => 'auth:api']
+], function ($router) {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/email-verified', [AuthController::class, 'emailVerified']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/profile', [AuthController::class, 'loggedUserData']);
+    Route::post('/forget-pass', [AuthController::class, 'forgetPassword']);
+    Route::post('/verified-checker', [AuthController::class, 'emailVerifiedForResetPass']);
+    Route::post('/reset-pass', [AuthController::class, 'resetPassword']);
+    Route::post('/update-pass', [AuthController::class, 'updatePassword']);
+    Route::put('/profile/edit/{id}', [AuthController::class, 'editProfile']);
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+});
 
+
+Route::middleware(['user','auth:api'])->group(function (){
+    Route::resource('ratings',RRatingController::class)->except('create','edit');
+});
+
+Route::get('/publish-rating/{id}',[RRatingController::class,'publishRating']);
+
+
+Route::middleware(['admin','auth:api'])->group(function (){
+
+});
 
 
 
@@ -34,11 +54,24 @@ Route::get('show-category', [CategoryController::class, 'showCategory']);
 
 // -----------------Sub Category --------------------
 Route::resource('sub_categories',RSubCategoryController::class)->except('create','edit');
-//-----------------Product-----------------------
+
+
+//-----------------Product--------------------------
 
 Route::resource('product',RProductController::class)->except('create','edit');
 
+//------------------Rating---------------------------
+
+// ----------------Contact --------------------------
+Route::resource('contact',RContactController::class)->except('create','edit');
+
+Route::middleware(['super.admin', 'auth:api'])->group(function () {
+    // super admin
+    Route::post('/add-admin', [AuthAdminController::class, 'addAdmin']);
+    Route::get('/show-admin', [AuthAdminController::class, 'showAdmin']);
+    Route::get('/delete-admin/{id}', [AuthAdminController::class, 'deleteAdmin']);
+});
 
 
-
-Route::post('add-product',[ProductController::class,'addProduct']);
+// public api for website
+Route::get('/our-picks',[WebsiteController::class,'ourPicks']);

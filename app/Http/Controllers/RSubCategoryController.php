@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RSubCategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         //
@@ -29,18 +27,6 @@ class RSubCategoryController extends Controller
             ],404);
         }
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
 
@@ -65,36 +51,69 @@ class RSubCategoryController extends Controller
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         //
+        $sub_category = Sub_Category::where('id',$id)->first();
+        if ($sub_category){
+            return response()->json([
+                'message' => 'Sub Category',
+                'status' => 200,
+                'data' => $sub_category
+            ],200);
+        }else{
+            return response()->json([
+                'message' => 'Sub Category',
+                'status' => 404,
+                'data' => []
+            ],404);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
+        $sub_category = Sub_Category::where('id', $id)->first();
+        if ($sub_category) {
+            $validator = Validator::make($request->all(), [
+                'name' => 'string|min:2|max:20',
+                'image' => ''
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 400);
+            }
+            if ($request->file('image')) {
+                if (!empty($sub_category->image)) {
+                    removeImage($sub_category->image);
+                }
+                $sub_category->image = saveImage($request);
+            }
+            $sub_category->name = $request->name ?? $sub_category->name;
+            $sub_category->update();
+            return response()->json([
+                'message' => 'Category updated successfully',
+                'data' => $sub_category,
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'Category not found',
+                'data' => []
+            ]);
+        }
 
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         //
+        $category = Sub_Category::where('id', $id)->first();
+        if ($category) {
+            $category->delete();
+            return response()->json([
+                'message' => 'Category deleted successfully',
+            ],200);
+        }
+        return response()->json([
+            'message' => 'Category Not Found',
+        ],404);
     }
 }
