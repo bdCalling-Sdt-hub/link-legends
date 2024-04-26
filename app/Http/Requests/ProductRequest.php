@@ -24,7 +24,7 @@ class ProductRequest extends FormRequest
         return [
             //
             'category_id' => 'required',
-            'subcategory_id' => 'required',
+            'sub_category_id' => 'required',
             'product_name' => 'required',
             'url' => 'required',
             'regular_price' => 'required|numeric',

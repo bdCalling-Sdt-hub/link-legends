@@ -8,24 +8,21 @@ use Illuminate\Support\Facades\Validator;
 
 class RSubCategoryController extends Controller
 {
-
-    public function index()
+    public function index(Request $request)
     {
         //
-        $sub_category = Sub_Category::all();
-        if ($sub_category){
-            return response()->json([
-                'message' => 'Sub Category',
-                'status' => 200,
-                'data' => $sub_category
-            ],200);
-        }else{
-            return response()->json([
-                'message' => 'Sub Category',
-                'status' => 404,
-                'data' => []
-            ],404);
+        $sub_category_name = $request->search;
+        $query = Sub_Category::query();
+
+        // Apply filters if category is provided
+        if ($sub_category_name) {
+            $query->where('name', 'like', '%' . $sub_category_name . '%');
         }
+        $sub_categories = $query->paginate(9);
+        return response()->json([
+            'message' => 'Sub Categories',
+            'data' => $sub_categories,
+        ]);
     }
     public function store(Request $request)
     {
@@ -42,7 +39,7 @@ class RSubCategoryController extends Controller
         $sub_category->category_id = $request->category_id;
         $sub_category->name = $request->name;
         if ($request->file('image')) {
-            $sub_category->image = saveImage($request);
+            $sub_category->image = saveImage($request,'image');
         }
         $sub_category->save();
         return response()->json([
@@ -86,7 +83,7 @@ class RSubCategoryController extends Controller
                 if (!empty($sub_category->image)) {
                     removeImage($sub_category->image);
                 }
-                $sub_category->image = saveImage($request);
+                $sub_category->image = saveImage($request,'image');
             }
             $sub_category->name = $request->name ?? $sub_category->name;
             $sub_category->update();

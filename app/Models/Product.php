@@ -24,4 +24,9 @@ class Product extends Model
     {
         return $this->hasMany(Product_Image::class);
     }
+
+    public function book_mark():HasMany
+    {
+        return $this->HasMany(BookMark::class);
+    }
 }

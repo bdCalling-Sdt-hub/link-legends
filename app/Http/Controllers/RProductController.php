@@ -7,26 +7,37 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\Product_Image;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class RProductController extends Controller
 {
-
-    public function index()
+    public function index(Request $request)
     {
-        //
-        $product_list = Product::with('product_image')->get();
+        // Get query parameters for category name and brand name
+        $categoryName = $request->query('category');
+        $brandName = $request->query('brand');
 
-        $formated_product_list = $product_list->map(function ($product){
-//            $product->size = json_decode($product->size);
-            return $product;
-        });
-        return response()->json([
-            'message' => 'Product List',
-            'data' => $formated_product_list,
-        ]);
+        // Query products with eager loading
+        $query = Product::with('category', 'sub_category', 'product_image');
+
+        // Apply filters if category name is provided
+        if ($categoryName) {
+            $query->whereHas('category', function ($query) use ($categoryName) {
+                $query->where('name', 'like', '%' . $categoryName . '%');
+            });
+        }
+
+        // Apply filters if brand name is provided
+        if ($brandName) {
+            $query->where('brand_name', 'like', '%' . $brandName . '%');
+        }
+
+        // Paginate the results
+        $product_list = $query->paginate(9);
+
+        // Format the product list
+        return productResponse($product_list);
     }
+
 
     public function store(ProductRequest $request)
     {
@@ -34,7 +45,7 @@ class RProductController extends Controller
         // Create a new product instance
         $product = new Product();
         $product->category_id = $request->category_id;
-        $product->subcategory_id = $request->subcategory_id;
+        $product->sub_category_id = $request->sub_category_id;
         $product->product_name = $request->product_name;
         $product->url = $request->url;
         $product->color = $request->color;
@@ -81,20 +92,42 @@ class RProductController extends Controller
     }
     public function show(string $id)
     {
-        //
-        $product = Product::with('product_image')->where('id',$id)->first();
-        if(!$product){
+        // Fetch the details of the current product
+        $product = Product::with('category','sub_category','product_image')->where('id',$id)->first();
+        if (empty($product)){
             return response()->json([
-                'message' => 'Data Does not exist',
-                'data' => [],
-            ]);
+                'message' => 'Product Does not exist',
+            ],404);
         }
+        // Increment the view count
+        $product->increment('view_count');
+
+        // Decode the size and color attributes
         $product->size = json_decode($product->size);
+        $product->color = json_decode($product->color);
+
+        // Fetch sub-category-wise related products (excluding the current product)
+        $subCategoryProducts = Product::with('product_image')
+            ->where('sub_category_id', $product->sub_category_id)
+            ->where('id', '!=', $product->id)
+            ->paginate(4);
+
+        // Fetch brand-wise related products (excluding the current product)
+        $brandProducts = Product::with('product_image')
+            ->where('brand_name', $product->brand_name)
+            ->where('id', '!=', $product->id)
+            ->paginate(4);
+
         return response()->json([
             'message' => 'Product Details',
-            'data' => $product,
+            'data' => [
+                'current_product' => $product,
+                'sub_category_products' => $subCategoryProducts,
+                'brand_products' => $brandProducts,
+            ],
         ]);
     }
+
 
     public function update(UpdateProductRequest $request, $id)
     {
@@ -107,7 +140,7 @@ class RProductController extends Controller
         }
         // Update product data
         $product->category_id = $request->category_id ?? $product->category_id;
-        $product->subcategory_id = $request->subcategory_id ?? $product->subcategory_id;
+        $product->sub_category_id = $request->sub_category_id ?? $product->sub_category_id;
         $product->product_name = $request->product_name ?? $product->product_name;
         $product->url = $request->url ?? $product->url;
         $product->color = $request->color ?? $product->color;

@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\AuthAdminController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\BookMarkController;
+use App\Http\Controllers\DashboardUserController;
+use App\Http\Controllers\RCategoryController;
 use App\Http\Controllers\RContactController;
 use App\Http\Controllers\RProductController;
 use App\Http\Controllers\RRatingController;
@@ -34,31 +35,31 @@ Route::group([
 
 
 Route::middleware(['user','auth:api'])->group(function (){
-    Route::resource('ratings',RRatingController::class)->except('create','edit');
+    Route::get('/toggle-bookmark',[BookMarkController::class,'toggleBookmark']);
+    Route::get('/wish-list',[BookMarkController::class,'wishListData']);
 });
 
-Route::get('/publish-rating/{id}',[RRatingController::class,'publishRating']);
+Route::middleware(['admin.guest'])->group(function (){
+    Route::resource('categories',RCategoryController::class)->only('index');
+    Route::resource('products',RProductController::class)->only('show');
+});
 
 
 Route::middleware(['admin','auth:api'])->group(function (){
 
-});
+    //-----------------Product--------------------------
+    Route::resource('products',RProductController::class)->except('create','edit','show');
+    Route::get('user-list',[DashboardUserController::class,'allUser']);
+    Route::get('/publish-rating/{id}',[RRatingController::class,'publishRating']);
+    Route::resource('ratings',RRatingController::class)->only('index');
 
+    // -----------------Category --------------------
 
-
-// -----------------Category --------------------
-Route::post('add-category', [CategoryController::class, 'addCategory']);
-Route::post('update-category', [CategoryController::class, 'updateCategory']);
-Route::get('delete-category', [CategoryController::class, 'deleteCategory']);
-Route::get('show-category', [CategoryController::class, 'showCategory']);
+    Route::resource('categories',RCategoryController::class)->except('create','edit','index');
 
 // -----------------Sub Category --------------------
-Route::resource('sub_categories',RSubCategoryController::class)->except('create','edit');
-
-
-//-----------------Product--------------------------
-
-Route::resource('product',RProductController::class)->except('create','edit');
+    Route::resource('sub_categories',RSubCategoryController::class)->except('create','edit');
+});
 
 //------------------Rating---------------------------
 
@@ -70,8 +71,12 @@ Route::middleware(['super.admin', 'auth:api'])->group(function () {
     Route::post('/add-admin', [AuthAdminController::class, 'addAdmin']);
     Route::get('/show-admin', [AuthAdminController::class, 'showAdmin']);
     Route::get('/delete-admin/{id}', [AuthAdminController::class, 'deleteAdmin']);
+
 });
 
-
-// public api for website
+//public api's
 Route::get('/our-picks',[WebsiteController::class,'ourPicks']);
+Route::get('/trending-products',[WebsiteController::class,'trendingProducts']);
+Route::resource('ratings',RRatingController::class)->except('create','edit','index');
+
+Route::get('/customer-review',[RRatingController::class,'customerReview']);

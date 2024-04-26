@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id');
-            $table->foreignId('subcategory_id');
+            $table->foreignId('sub_category_id');
             $table->string('product_name');
             $table->string('url')->nullable();
             $table->string('color');

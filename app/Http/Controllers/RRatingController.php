@@ -27,7 +27,6 @@ class RRatingController extends Controller
 
     }
 
-
     public function store(RatingRequest $request)
     {
         $auth_user = auth()->user()->id;
@@ -116,5 +115,19 @@ class RRatingController extends Controller
             'message' => 'Rating status update successfully',
             'data' => $rating
         ]);
+    }
+
+    public function customerReview()
+    {
+        $customer_review = Rating::where('status','published')->paginate(9);
+        if (empty($customer_review)){
+            return response()->json([
+                'message' => 'Review does not exist',
+            ],404);
+        }
+        return response()->json([
+            'message' => 'Review',
+            'data' => $customer_review,
+        ],200);
     }
 }

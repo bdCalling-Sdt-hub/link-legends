@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -62,13 +63,20 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function isAdmin()
+//    public function isAdmin()
+//    {
+//        return $this->userType === 'ADMIN'; // Assuming 'role' is a column in your users table
+//    }
+//
+//    public function isUser()
+//    {
+//        return $this->userType === 'USER'; // Assuming 'role' is a column in your users table
+//    }
+
+    public function book_mark():HasMany
     {
-        return $this->userType === 'ADMIN'; // Assuming 'role' is a column in your users table
+        return $this->hasMany(BookMark::class);
     }
 
-    public function isUser()
-    {
-        return $this->userType === 'USER'; // Assuming 'role' is a column in your users table
-    }
+
 }

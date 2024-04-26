@@ -10,18 +10,13 @@ class WebsiteController extends Controller
     //
     public function ourPicks()
     {
-       $product = Product::where('our_picks',true)->paginate(9);
-       if (empty($product))
-       {
-           return response()->json([
-               'message' => 'No Product List Found',
-               'data' => [],
-           ]);
-       }
-       return response()->json([
-           'message' => 'Product List Found',
-           'data' => $product,
-       ]);
+       $product_list = Product::with('category','sub_category','product_image')->where('our_picks',true)->paginate(9);
+       return productResponse($product_list);
+    }
 
+    public function trendingProducts()
+    {
+        $trending_products = Product::with('category','sub_category','product_image')->orderBy('view_count','desc')->paginate(9);
+        return productResponse($trending_products);
     }
 }
