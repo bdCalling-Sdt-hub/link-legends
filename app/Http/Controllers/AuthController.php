@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\SendNotificationEvent;
 use App\Mail\OtpMail;
 use App\Models\User;
+use App\Notifications\AdminNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -19,13 +20,12 @@ class AuthController extends Controller
     //
     public function register(Request $request)
     {
-
         $user = User::where('email', $request->email)->first();
-        if ($user){
+        if ($user) {
             return response()->json([
                 'message' => 'you already have an account. please login',
             ]);
-        }else{
+        } else {
             $validator = Validator::make($request->all(), [
                 'fullName' => 'required|string|min:2|max:100',
                 'email' => 'required|string|email|max:60|unique:users',
@@ -49,17 +49,17 @@ class AuthController extends Controller
             ];
 
             $user = User::create($userData);
+            $user->notify(new AdminNotification($user));
 
-//            Mail::to($request->email)->send(new OtpMail($user->otp));
+            //            Mail::to($request->email)->send(new OtpMail($user->otp));
             $credentials = $request->only('email', 'password');
 
             if ($token = $this->guard()->attempt($credentials)) {
                 return response()->json([
                     'message' => 'User sign up successfully',
                     'token' => $this->respondWithToken($token),
-                    ]);
+                ]);
             }
-
         }
     }
 
@@ -86,12 +86,12 @@ class AuthController extends Controller
         }
         $user->update(['verify_email' => 1]);
         $user->update(['otp' => 0]);
-//        $result = app('App\Http\Controllers\NotificationController')->sendNotification('Welcome to the get hired app', $user->created_at, $user);
-//        $admin_result = app('App\Http\Controllers\NotificationController')->sendAdminNotification('New Customer Registered', $user->created_at, $user->fullName, $user);
-//        event(new SendNotificationEvent('New Customer Registered', $user->created_at, $user));
+        //        $result = app('App\Http\Controllers\NotificationController')->sendNotification('Welcome to the get hired app', $user->created_at, $user);
+        //        $admin_result = app('App\Http\Controllers\NotificationController')->sendAdminNotification('New Customer Registered', $user->created_at, $user->fullName, $user);
+        //        event(new SendNotificationEvent('New Customer Registered', $user->created_at, $user));
         return response([
             'message' => 'Email verified successfully',
-//            'notification' => $result,
+            //            'notification' => $result,
             'token' => $this->respondWithToken($token),
         ]);
     }
@@ -107,11 +107,11 @@ class AuthController extends Controller
         }
         $userData = User::where('email', $request->email)->first();
         // return gettype($userData->otp);
-//        if ($userData && Hash::check($request->password, $userData->password)) {
-//            if ($userData->verify_email == 0) {
-//                return response()->json(['message' => 'Your email is not verified'], 401);
-//            }
-//        }
+        //        if ($userData && Hash::check($request->password, $userData->password)) {
+        //            if ($userData->verify_email == 0) {
+        //                return response()->json(['message' => 'Your email is not verified'], 401);
+        //            }
+        //        }
 
         $credentials = $request->only('email', 'password');
 
@@ -303,17 +303,16 @@ class AuthController extends Controller
         return response()->json(['message' => 'OTP resent successfully']);
     }
 
-
     protected function respondWithToken($token)
     {
-        $user = Auth::guard('api')->user()->makeHidden(['contact_no', 'address','user_status', 'verify_email', 'otp', 'created_at', 'updated_at']);
+        $user = Auth::guard('api')->user()->makeHidden(['contact_no', 'address', 'user_status', 'verify_email', 'otp', 'created_at', 'updated_at']);
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
             'user' => $user,
             'expires_in' => auth('api')
-                    ->factory()
-                    ->getTTL() * 600000000000,  // hour*seconds
+                ->factory()
+                ->getTTL() * 600000000000,  // hour*seconds
         ]);
     }
 }
