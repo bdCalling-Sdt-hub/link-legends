@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ContactRequest;
+use App\Http\Requests\OfficeHotlineRequest;
 use App\Models\OfficeHotline;
 use Illuminate\Http\Request;
 
@@ -64,20 +64,20 @@ class ContactController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(OfficeHotline $request, string $id)
     {
         $check = OfficeHotline::find($id);
         if ($check) {
             // Update category_id
             $update_contact = OfficeHotline::find($id);
-            $update_contact->phone = $request->phone ?? $update_blog->phone;
+            $update_contact->phone = $request->phone ?? $update_contact->phone;
             $update_contact->email = $request->email ?? $update_contact->email;
             $update_contact->address = $request->address ?? $update_contact->address;
             // Save the updated slide
             $update_contact->save();
         } else {
             $update_contact = new OfficeHotline();
-            $update_contact->phone = $request->phone ?? $update_blog->phone;
+            $update_contact->phone = $request->phone ?? $update_contact->phone;
             $update_contact->email = $request->email ?? $update_contact->email;
             $update_contact->address = $request->address ?? $update_contact->address;
             // Save the updated slide

@@ -4,13 +4,12 @@ use App\Http\Controllers\Api\AboutController;
 use App\Http\Controllers\Api\BlogeController;
 use App\Http\Controllers\Api\CarosalController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FAQRequestController;
 use App\Http\Controllers\Api\PrivacyController;
 use App\Http\Controllers\Api\SecandCarosalController;
 use App\Http\Controllers\Api\TerandingBrandController;
 use App\Http\Controllers\Api\TermsConditionController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthAdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
@@ -42,35 +41,32 @@ Route::group([
     Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 });
 
+/*
+ * Dashboard show data
+ */
+Route::get('/admin/notification', [DashboardController::class, 'showAdminNotifications']);
+Route::get('/counting', [DashboardController::class, 'counting_dashboar']);
+Route::get('/user/overview', [DashboardController::class, 'user_overview']);
+Route::resource('/dashboard', DashboardController::class)->except('create');
 Route::resource('/carosal', CarosalController::class)->except('create');
 Route::post('/update/carosal', [CarosalController::class, 'update']);
-
 Route::resource('/slide', SecandCarosalController::class)->except('create');
-
 Route::resource('/tranding/brand', TerandingBrandController::class)->except('create');
 Route::resource('/about', AboutController::class)->except('create');
 Route::resource('/blog', BlogeController::class)->except('create');
 Route::post('/blog/update/status/{id}', [BlogeController::class, 'update_status']);
-
-Route::resource('/contact', ContactController::class)->except('create');
-
+Route::resource('/help/line', ContactController::class)->except('create');
 Route::resource('/faq', FAQRequestController::class)->except('create');
-
 Route::resource('/terms/conditions', TermsConditionController::class)->except('create');
 Route::resource('/privacy', PrivacyController::class)->except('create');
 
-Route::middleware(['user','auth:api'])->group(function (){
-    Route::resource('ratings',RRatingController::class)->except('create','edit');
+Route::middleware(['user', 'auth:api'])->group(function () {
+    Route::resource('ratings', RRatingController::class)->except('create', 'edit');
 });
 
-Route::get('/publish-rating/{id}',[RRatingController::class,'publishRating']);
+Route::get('/publish-rating/{id}', [RRatingController::class, 'publishRating']);
 
-
-Route::middleware(['admin','auth:api'])->group(function (){
-
-});
-
-
+Route::middleware(['admin', 'auth:api'])->group(function () {});
 
 // -----------------Category --------------------
 Route::post('add-category', [CategoryController::class, 'addCategory']);
@@ -79,17 +75,16 @@ Route::get('delete-category', [CategoryController::class, 'deleteCategory']);
 Route::get('show-category', [CategoryController::class, 'showCategory']);
 
 // -----------------Sub Category --------------------
-Route::resource('sub_categories',RSubCategoryController::class)->except('create','edit');
+Route::resource('sub_categories', RSubCategoryController::class)->except('create', 'edit');
 
+// -----------------Product--------------------------
 
-//-----------------Product--------------------------
+Route::resource('product', RProductController::class)->except('create', 'edit');
 
-Route::resource('product',RProductController::class)->except('create','edit');
-
-//------------------Rating---------------------------
+// ------------------Rating---------------------------
 
 // ----------------Contact --------------------------
-Route::resource('contact',RContactController::class)->except('create','edit');
+Route::resource('contact', RContactController::class)->except('create', 'edit');
 
 Route::middleware(['super.admin', 'auth:api'])->group(function () {
     // super admin
@@ -98,6 +93,5 @@ Route::middleware(['super.admin', 'auth:api'])->group(function () {
     Route::get('/delete-admin/{id}', [AuthAdminController::class, 'deleteAdmin']);
 });
 
-
 // public api for website
-Route::get('/our-picks',[WebsiteController::class,'ourPicks']);
+Route::get('/our-picks', [WebsiteController::class, 'ourPicks']);
